@@ -1,4 +1,7 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
+
   export let startPressed = false;
   function startSearch() {
     startPressed = true;
@@ -16,7 +19,7 @@
       <option value="weighted">Weighted</option>
     </select>
   </label>
-  <button on:click={() => startSearch()}>Start</button>
+  <button on:click={() => dispatch("startSearch")}>Start</button>
 </div>
 
 <style>
