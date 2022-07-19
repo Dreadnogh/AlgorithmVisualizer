@@ -1,4 +1,9 @@
 <script lang="ts">
+  import {
+    startDijkstra,
+    getNodesInShortestPathOrder,
+  } from "../algorithms/Dijkstra.js";
+
   let START_NODE_ROW = 10;
   let START_NODE_COL = 10;
   let FINISH_NODE_ROW = 25;
@@ -20,7 +25,6 @@
   }
 
   function createNode(row: number, col: number) {
-    console.log(nodeGrid);
     return {
       row: row,
       col: col,
@@ -36,7 +40,11 @@
   function startSearch(Algorithm) {
     switch (Algorithm) {
       case "dijkstra":
-        const visitedNodesInOrder = startDijkstra();
+        const visitedNodesInOrder = startDijkstra(
+          nodeGrid,
+          nodeGrid[START_NODE_COL][START_NODE_ROW],
+          nodeGrid[FINISH_NODE_COL][FINISH_NODE_ROW]
+        );
         const nodesInShortestPathOrder = getNodesInShortestPathOrder(
           nodeGrid[FINISH_NODE_COL][FINISH_NODE_ROW]
         );
@@ -46,100 +54,6 @@
       default:
         break;
     }
-  }
-
-  function startDijkstra() {
-    const visitedNodesInOrder = [];
-    nodeGrid[START_NODE_COL][START_NODE_ROW].distance = 0;
-    console.log(
-      "Start node distance: " +
-        nodeGrid[START_NODE_COL][START_NODE_ROW].distance
-    );
-    //currentNode.distance = 0;
-    const unvisitedNodes = getAllNodes(nodeGrid);
-
-    while (!!unvisitedNodes.length) {
-      console.log("Started traverse grid...");
-      sortNodesByDistance(unvisitedNodes);
-      const closestNode = unvisitedNodes.shift();
-      console.log("Distance of current node: " + closestNode.distance);
-      // If we encounter a wall, we skip it.
-      if (closestNode.isWall) continue;
-      // If the closest node is at a distance of infinity,
-      // we must be trapped and should therefore stop.
-      if (closestNode.distance === Infinity) return visitedNodesInOrder;
-      closestNode.isVisited = true;
-      //addVisitedClass(closestNode);
-      visitedNodesInOrder.push(closestNode);
-      if (closestNode === nodeGrid[FINISH_NODE_COL][FINISH_NODE_ROW]) {
-        console.log("Found finish node");
-        return visitedNodesInOrder;
-      }
-      updateUnvisitedNeighbors(closestNode, nodeGrid);
-    }
-  }
-
-  function sortNodesByDistance(unvisitedNodes) {
-    unvisitedNodes.sort((nodeA, nodeB) => nodeA.distance - nodeB.distance);
-  }
-
-  function addVisitedClass(node) {
-    let element = document.getElementById(node.col + "_" + node.row);
-    element.classList.add("visited");
-  }
-
-  function addShortestNodeClass(node) {
-    let element = document.getElementById(node.col + "_" + node.row);
-    element.classList.add("shortest");
-  }
-
-  function updateUnvisitedNeighbors(node, grid) {
-    const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
-    for (const neighbor of unvisitedNeighbors) {
-      neighbor.distance = node.distance + 1;
-      neighbor.previousNode = node;
-    }
-  }
-
-  function getUnvisitedNeighbors(node, grid) {
-    const neighbors = [];
-    const { col, row } = node;
-    if (row > 0) neighbors.push(grid[row - 1][col]);
-    if (row < grid.length - 1) neighbors.push(grid[row + 1][col]);
-    if (col > 0) neighbors.push(grid[row][col - 1]);
-    if (col < grid[0].length - 1) neighbors.push(grid[row][col + 1]);
-    return neighbors.filter((neighbor) => !neighbor.isVisited);
-  }
-
-  function getAllNodes(grid) {
-    const nodes = [];
-    for (const row of grid) {
-      for (const node of row) {
-        nodes.push(node);
-      }
-    }
-    return nodes;
-  }
-
-  function getNodesInShortestPathOrder(finishNode) {
-    console.log("Started to find shortest path");
-
-    const nodesInShortestPathOrder = [];
-    let currentNode = finishNode;
-    console.log(
-      "previous node: " +
-        currentNode.previousNode.col +
-        " ---- " +
-        currentNode.previousNode.row
-    );
-    while (currentNode !== null) {
-      console.log(
-        "Current node coords: " + currentNode.col + " -- " + currentNode.row
-      );
-      nodesInShortestPathOrder.unshift(currentNode);
-      currentNode = currentNode.previousNode;
-    }
-    return nodesInShortestPathOrder;
   }
 
   // ANIMATION
@@ -171,6 +85,27 @@
       }, 50 * i);
     }
   }
+
+  function addVisitedClass(node) {
+    let element = document.getElementById(node.col + "_" + node.row);
+    element.classList.add("visited");
+  }
+
+  function addShortestNodeClass(node) {
+    let element = document.getElementById(node.col + "_" + node.row);
+    element.classList.add("shortest");
+  }
+
+  function setWall(e) {
+    let id = e.srcElement.id;
+    let nodeCol = id.split("_")[0];
+    let nodeRow = id.split("_")[1];
+    let node = nodeGrid[nodeRow][nodeCol];
+
+    node.isWall = true;
+    document.getElementById(id).classList.add("wall");
+    console.log("Wall added to: " + id);
+  }
 </script>
 
 <button on:click={() => startSearch("dijkstra")}>Start</button>
@@ -182,11 +117,13 @@
     {#each nodeGrid as currRow, i (i)}
       {#each currRow as currNode, j (j)}
         <div
+          on:click={(e) => setWall(e)}
           id="{i}_{j}"
           class:visited={false}
           class:shortest={false}
           class:finish={currNode.isFinish}
           class:start={currNode.isStart}
+          class:wall={false}
         />
       {/each}
     {/each}
@@ -222,5 +159,9 @@
 
   .container div.start {
     background: green;
+  }
+
+  .container div.wall {
+    background: rgb(46, 46, 46);
   }
 </style>
