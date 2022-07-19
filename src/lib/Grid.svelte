@@ -13,6 +13,17 @@
   $: MAX_row = `repeat(${grid[0]}, 1fr)`;
   let nodeGrid = [];
   let currentNode = null;
+  let interactState = "wall";
+
+  let mouseDown = false;
+
+  document.body.onmousedown = () => {
+    mouseDown = true;
+  };
+
+  document.body.onmouseup = () => {
+    mouseDown = false;
+  };
 
   //Setup 2D grid array
   for (let i = 0; i < grid[0]; i++) {
@@ -87,29 +98,92 @@
   }
 
   function addVisitedClass(node) {
-    let element = document.getElementById(node.col + "_" + node.row);
-    element.classList.add("visited");
+    if (
+      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
+      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
+    ) {
+      let element = document.getElementById(node.col + "_" + node.row);
+      element.classList.add("visited");
+    }
   }
 
   function addShortestNodeClass(node) {
-    let element = document.getElementById(node.col + "_" + node.row);
-    element.classList.add("shortest");
+    if (
+      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
+      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
+    ) {
+      let element = document.getElementById(node.col + "_" + node.row);
+      element.classList.add("shortest");
+    }
+  }
+
+  function interact(e) {
+    switch (interactState) {
+      case "wall":
+        setWall(e);
+        break;
+      case "setStart":
+        break;
+      case "setFinish":
+        break;
+      case "weight":
+        break;
+      case "eraser":
+        remove(e);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function remove(e) {
+    if (mouseDown) {
+      let id = e.srcElement.id;
+      let nodeCol = id.split("_")[0];
+      let nodeRow = id.split("_")[1];
+      let node = nodeGrid[nodeRow][nodeCol];
+
+      node.isWall = false;
+      node.isFinish = false;
+      node.isStart = false;
+      document.getElementById(id).classList.remove("wall");
+      document.getElementById(id).classList.remove("finish");
+      document.getElementById(id).classList.remove("start");
+      console.log("node classes erased " + id);
+    }
   }
 
   function setWall(e) {
-    let id = e.srcElement.id;
-    let nodeCol = id.split("_")[0];
-    let nodeRow = id.split("_")[1];
-    let node = nodeGrid[nodeRow][nodeCol];
+    if (mouseDown) {
+      let id = e.srcElement.id;
+      let nodeCol = id.split("_")[0];
+      let nodeRow = id.split("_")[1];
+      let node = nodeGrid[nodeRow][nodeCol];
 
-    node.isWall = true;
-    document.getElementById(id).classList.add("wall");
-    console.log("Wall added to: " + id);
+      node.isWall = true;
+      document.getElementById(id).classList.add("wall");
+      console.log("Wall added to: " + id);
+    }
+  }
+
+  function removeWall(e) {
+    if (mouseDown) {
+      let id = e.srcElement.id;
+      let nodeCol = id.split("_")[0];
+      let nodeRow = id.split("_")[1];
+      let node = nodeGrid[nodeRow][nodeCol];
+
+      node.isWall = false;
+      document.getElementById(id).classList.remove("wall");
+      console.log("Wall removed at: " + id);
+    }
   }
 </script>
 
 <button on:click={() => startSearch("dijkstra")}>Start</button>
-<div class="grid">
+<button on:click={() => (interactState = "wall")}>Wall</button>
+<button on:click={() => (interactState = "eraser")}>Eraser</button>
+<div class="grid" style="display: flex; justify-content: center;">
   <div
     class="container"
     style="grid-template-rows: {MAX_row} ; grid-template-columns: {MAX_col};"
@@ -117,7 +191,7 @@
     {#each nodeGrid as currRow, i (i)}
       {#each currRow as currNode, j (j)}
         <div
-          on:click={(e) => setWall(e)}
+          on:mousemove={(e) => interact(e)}
           id="{i}_{j}"
           class:visited={false}
           class:shortest={false}
@@ -133,24 +207,58 @@
 <style>
   .container {
     display: grid;
-    border: 1px solid #999;
+    border: 1px solid rgb(0, 0, 0);
     border-radius: 2px;
-    width: 100%;
+    width: 800px;
+    grid-gap: 0px;
+    row-gap: 0px;
     height: 800px;
-    grid-gap: 1px;
-    background: #999;
+    background: rgb(255, 255, 255);
   }
 
   .container div {
     background: #fff;
+    outline: 1px solid black;
+    height: 20px;
+    width: 20px;
+  }
+
+  @keyframes transitionColor {
+    from {
+      background: rgb(67, 34, 255);
+      width: 10px;
+      height: 10px;
+      border-radius: 100%;
+    }
+    to {
+      background: var(--clrVisited);
+      border-radius: 0%;
+      widows: 20px;
+      height: 20px;
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes shortestPathGlow {
+    from {
+      background-color: #ffcccc;
+    }
+    to {
+      background-color: rgba(255, 106, 136, 0.842);
+    }
   }
 
   .container div.visited {
     background: var(--clrVisited);
+    animation-name: transitionColor;
+    animation-duration: 1.3s;
   }
 
   .container div.shortest {
     background: rgba(255, 106, 136, 0.842);
+    animation-name: shortestPathGlow;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
   }
 
   .container div.finish {
