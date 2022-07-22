@@ -1,6 +1,6 @@
 export function startDijkstra(nodeGrid, START_NODE, FINISH_NODE) {
   const visitedNodesInOrder = [];
-  nodeGrid[START_NODE.col][START_NODE.row].distance = 0;
+  nodeGrid[START_NODE.row][START_NODE.col].distance = 0;
   const unvisitedNodes = getAllNodes(nodeGrid);
   console.log("Started traverse grid...");
   while (!!unvisitedNodes.length) {
@@ -13,7 +13,7 @@ export function startDijkstra(nodeGrid, START_NODE, FINISH_NODE) {
     closestNode.isVisited = true;
 
     visitedNodesInOrder.push(closestNode);
-    if (closestNode === nodeGrid[FINISH_NODE.col][FINISH_NODE.row]) {
+    if (closestNode === nodeGrid[FINISH_NODE.row][FINISH_NODE.col]) {
       console.log("Found finish node");
       return visitedNodesInOrder;
     }

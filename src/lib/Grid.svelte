@@ -4,9 +4,9 @@
     getNodesInShortestPathOrder,
   } from "../algorithms/Dijkstra.js";
 
-  let START_NODE_ROW = 10;
-  let START_NODE_COL = 10;
-  let FINISH_NODE_ROW = 25;
+  let START_NODE_ROW = 15;
+  let START_NODE_COL = 14;
+  let FINISH_NODE_ROW = 24;
   let FINISH_NODE_COL = 25;
   let grid = [40, 40];
   $: MAX_col = `repeat(${grid[1]}, 1fr)`;
@@ -72,11 +72,11 @@
       case "dijkstra":
         const visitedNodesInOrder = startDijkstra(
           nodeGrid,
-          nodeGrid[START_NODE_COL][START_NODE_ROW],
-          nodeGrid[FINISH_NODE_COL][FINISH_NODE_ROW]
+          nodeGrid[START_NODE_ROW][START_NODE_COL],
+          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
         );
         const nodesInShortestPathOrder = getNodesInShortestPathOrder(
-          nodeGrid[FINISH_NODE_COL][FINISH_NODE_ROW]
+          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
         );
         animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
         break;
@@ -92,8 +92,12 @@
         setWall(e);
         break;
       case "setStart":
+        setStart(e);
+        clearPath();
         break;
       case "setFinish":
+        setFinish(e);
+        clearPath();
         break;
       case "weight":
         break;
@@ -105,13 +109,55 @@
     }
   }
 
-  function setWall(e) {
-    if (mouseDown) {
-      let id = e.srcElement.id;
-      let nodeCol = id.split("_")[0];
-      let nodeRow = id.split("_")[1];
-      let node = nodeGrid[nodeRow][nodeCol];
+  function setStart(e) {
+    let id = e.srcElement.id;
+    let nodeCol = id.split("_")[0];
+    let nodeRow = id.split("_")[1];
+    let node = nodeGrid[nodeRow][nodeCol];
 
+    //Remove old start
+    let oldNode = nodeGrid[START_NODE_ROW][START_NODE_COL];
+    oldNode.isStart = false;
+    document
+      .getElementById(oldNode.col + "_" + oldNode.row)
+      .classList.remove("start");
+
+    //Add new start
+    START_NODE_ROW = node.row;
+    START_NODE_COL = node.col;
+    nodeGrid[START_NODE_ROW][START_NODE_COL].isStart = true;
+    document.getElementById(id).classList.add("start");
+  }
+
+  function setFinish(e) {
+    let id = e.srcElement.id;
+    let nodeCol = id.split("_")[0];
+    let nodeRow = id.split("_")[1];
+    let node = nodeGrid[nodeRow][nodeCol];
+
+    //Remove old Finish
+    let oldNode = nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    oldNode.isFinish = false;
+    document
+      .getElementById(oldNode.col + "_" + oldNode.row)
+      .classList.remove("finish");
+
+    //Add new Finish
+    FINISH_NODE_ROW = node.row;
+    FINISH_NODE_COL = node.col;
+    nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL].isFinish = true;
+    document.getElementById(id).classList.add("finish");
+  }
+
+  function setWall(e) {
+    let id = e.srcElement.id;
+    let nodeCol = id.split("_")[0];
+    let nodeRow = id.split("_")[1];
+    let node = nodeGrid[nodeRow][nodeCol];
+    if (
+      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
+      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
+    ) {
       node.isWall = true;
       document.getElementById(id).classList.add("wall");
       console.log("Wall added to: " + id);
@@ -119,20 +165,18 @@
   }
 
   function remove(e) {
-    if (mouseDown) {
-      let id = e.srcElement.id;
-      let nodeCol = id.split("_")[0];
-      let nodeRow = id.split("_")[1];
-      let node = nodeGrid[nodeRow][nodeCol];
+    let id = e.srcElement.id;
+    let nodeCol = id.split("_")[0];
+    let nodeRow = id.split("_")[1];
+    let node = nodeGrid[nodeRow][nodeCol];
 
-      node.isWall = false;
-      node.isFinish = false;
-      node.isStart = false;
-      document.getElementById(id).classList.remove("wall");
-      document.getElementById(id).classList.remove("finish");
-      document.getElementById(id).classList.remove("start");
-      console.log("node classes erased " + id);
-    }
+    node.isWall = false;
+    node.isFinish = false;
+    node.isStart = false;
+    document.getElementById(id).classList.remove("wall");
+    document.getElementById(id).classList.remove("finish");
+    document.getElementById(id).classList.remove("start");
+    console.log("node classes erased " + id);
   }
 
   document.body.onmousedown = () => {
@@ -201,18 +245,16 @@
 <div id="button-panel" style="padding-bottom: 5px">
   <button on:click={() => startSearch()}>Start</button>
   {#if interactState == "wall"}
-    <button
-      style="background-color:lightslategray; border-inline: 1rem solid DodgerBlue;  font-weight:bold"
-      on:click={() => (interactState = "wall")}>Wall</button
+    <button class="selected" on:click={() => (interactState = "wall")}
+      >Wall</button
     >
   {:else}
     <button on:click={() => (interactState = "wall")}>Wall</button>
   {/if}
 
   {#if interactState == "eraser"}
-    <button
-      style="background-color:lightslategray; border-inline: 1rem solid DodgerBlue; font-weight:bold"
-      on:click={() => (interactState = "eraser")}>Eraser</button
+    <button class="selected" on:click={() => (interactState = "eraser")}
+      >Eraser</button
     >
   {:else}
     <button on:click={() => (interactState = "eraser")}>Eraser</button>
@@ -220,6 +262,22 @@
 
   <button on:click={() => clearPath()}>Clear Path</button>
   <button on:click={() => resetBoard()}>Clear Board</button>
+</div>
+<div style="padding-bottom: 5px">
+  {#if interactState == "setStart"}
+    <button class="selected" on:click={() => (interactState = "setStart")}
+      >SET Start</button
+    >
+  {:else}
+    <button on:click={() => (interactState = "setStart")}>SET Start</button>
+  {/if}
+  {#if interactState == "setFinish"}
+    <button class="selected" on:click={() => (interactState = "setFinish")}
+      >SET Finish</button
+    >
+  {:else}
+    <button on:click={() => (interactState = "setFinish")}>SET Finish</button>
+  {/if}
 </div>
 {#key reset}
   <div
@@ -237,7 +295,9 @@
           <div class="gridBox">
             <div
               class="gridNode"
-              on:mousemove={(e) => interact(e)}
+              on:mousemove={(e) => {
+                if (mouseDown) interact(e);
+              }}
               on:mousedown={(e) => interact(e)}
               id="{j}_{i}"
               class:visited={false}
@@ -306,6 +366,12 @@
     font-size: 17px;
     cursor: pointer;
     font-weight: 400;
+  }
+
+  button.selected {
+    background-color: lightslategray;
+    border-inline: 1rem solid DodgerBlue;
+    font-weight: bold;
   }
 
   button:hover {
