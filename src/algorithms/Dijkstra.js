@@ -2,12 +2,10 @@ export function startDijkstra(nodeGrid, START_NODE, FINISH_NODE) {
   const visitedNodesInOrder = [];
   nodeGrid[START_NODE.col][START_NODE.row].distance = 0;
   const unvisitedNodes = getAllNodes(nodeGrid);
-
+  console.log("Started traverse grid...");
   while (!!unvisitedNodes.length) {
-    console.log("Started traverse grid...");
     sortNodesByDistance(unvisitedNodes);
     const closestNode = unvisitedNodes.shift();
-    console.log("Distance of current node: " + closestNode.distance);
     // If node is a wall, we skip it.
     if (closestNode.isWall) continue;
     // If the closest node is at a distance of infinity,we are stuck and must break
@@ -62,9 +60,6 @@ export function getNodesInShortestPathOrder(finishNode) {
   let currentNode = finishNode;
 
   while (currentNode !== null) {
-    console.log(
-      "Current node coords: " + currentNode.col + " -- " + currentNode.row
-    );
     nodesInShortestPathOrder.unshift(currentNode);
     currentNode = currentNode.previousNode;
   }

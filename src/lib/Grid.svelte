@@ -70,7 +70,6 @@
         alert("Select an algorithm");
         break;
       case "dijkstra":
-        console.table(nodeGrid[10][12]);
         const visitedNodesInOrder = startDijkstra(
           nodeGrid,
           nodeGrid[START_NODE_COL][START_NODE_ROW],
@@ -87,64 +86,7 @@
     }
   }
 
-  // ANIMATION
-  function animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
-    console.log("Started to animate visited nodes");
-    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-      //Animate shortest path nodes
-      if (i === visitedNodesInOrder.length) {
-        runningTimeouts.push(
-          setTimeout(() => {
-            animateShortestPath(nodesInShortestPathOrder);
-          }, 15 * i)
-        );
-        return;
-      }
-
-      //Animate visited nodes
-      runningTimeouts.push(
-        setTimeout(() => {
-          const node = visitedNodesInOrder[i];
-          console.log("Current node to animate: " + node);
-          if (node != undefined) addVisitedClass(node);
-        }, 15 * i)
-      );
-    }
-  }
-
-  function animateShortestPath(nodesInShortestPathOrder) {
-    for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
-      runningTimeouts.push(
-        setTimeout(() => {
-          const node = nodesInShortestPathOrder[i];
-          addShortestNodeClass(node);
-        }, 50 * i)
-      );
-    }
-  }
-
-  function addVisitedClass(node) {
-    if (
-      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
-      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
-    ) {
-      let element = document.getElementById(node.col + "_" + node.row);
-      element.classList.add("visited");
-    }
-  }
-
-  function addShortestNodeClass(node) {
-    if (
-      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
-      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
-    ) {
-      let element = document.getElementById(node.col + "_" + node.row);
-      element.classList.add("shortest");
-    }
-  }
-
   function interact(e) {
-    console.log("clicked node");
     switch (interactState) {
       case "wall":
         setWall(e);
@@ -194,20 +136,73 @@
   }
 
   document.body.onmousedown = () => {
-    console.log("Fired mouse event");
     mouseDown = true;
   };
 
   document.body.onmouseup = () => {
     mouseDown = false;
   };
+
+  // ################ ANIMATION ################
+  function animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
+    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+      //Animate shortest path nodes
+      if (i === visitedNodesInOrder.length) {
+        runningTimeouts.push(
+          setTimeout(() => {
+            animateShortestPath(nodesInShortestPathOrder);
+          }, 15 * i)
+        );
+        return;
+      }
+
+      //Animate visited nodes
+      runningTimeouts.push(
+        setTimeout(() => {
+          const node = visitedNodesInOrder[i];
+          if (node != undefined) addVisitedClass(node);
+        }, 15 * i)
+      );
+    }
+  }
+
+  function animateShortestPath(nodesInShortestPathOrder) {
+    for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
+      runningTimeouts.push(
+        setTimeout(() => {
+          const node = nodesInShortestPathOrder[i];
+          addShortestNodeClass(node);
+        }, 50 * i)
+      );
+    }
+  }
+
+  function addVisitedClass(node) {
+    if (
+      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
+      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
+    ) {
+      let element = document.getElementById(node.col + "_" + node.row);
+      element.classList.add("visited");
+    }
+  }
+
+  function addShortestNodeClass(node) {
+    if (
+      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
+      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
+    ) {
+      let element = document.getElementById(node.col + "_" + node.row);
+      element.classList.add("shortest");
+    }
+  }
 </script>
 
 <div id="button-panel" style="padding-bottom: 5px">
   <button on:click={() => startSearch()}>Start</button>
   {#if interactState == "wall"}
     <button
-      style="background-color:lightslategray; border-inline: 1rem solid black;"
+      style="background-color:lightslategray; border-inline: 1rem solid DodgerBlue;  font-weight:bold"
       on:click={() => (interactState = "wall")}>Wall</button
     >
   {:else}
@@ -216,7 +211,7 @@
 
   {#if interactState == "eraser"}
     <button
-      style="background-color:lightslategray; border-inline: 1rem solid black;"
+      style="background-color:lightslategray; border-inline: 1rem solid DodgerBlue; font-weight:bold"
       on:click={() => (interactState = "eraser")}>Eraser</button
     >
   {:else}
@@ -329,6 +324,9 @@
 
   @keyframes transitionColor {
     0% {
+      background: rgb(251, 255, 0);
+    }
+    2% {
       background: rgb(0, 69, 173);
       border-radius: 100%;
       transform: scale(0.2);
