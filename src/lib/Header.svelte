@@ -11,7 +11,7 @@
 <div class="header">
   <label
     >Algorithm
-    <select>
+    <select id="algSelector">
       <option value="" disabled selected>Select your option</option>
       <option value="astar">A*</option>
       <option value="dijkstra">Dijkstra</option>
@@ -19,7 +19,6 @@
       <option value="weighted">Weighted</option>
     </select>
   </label>
-  <button on:click={() => dispatch("startSearch")}>Start</button>
 </div>
 
 <style>

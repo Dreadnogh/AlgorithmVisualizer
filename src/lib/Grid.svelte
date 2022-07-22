@@ -14,25 +14,40 @@
   let nodeGrid = [];
   let currentNode = null;
   let interactState = "wall";
+  let reset = 0;
+  let runningTimeouts = [];
 
   let mouseDown = false;
-
-  document.body.onmousedown = () => {
-    mouseDown = true;
-  };
-
-  document.body.onmouseup = () => {
-    mouseDown = false;
-  };
-
+  createGrid();
   //Setup 2D grid array
-  for (let i = 0; i < grid[0]; i++) {
-    let currentRow = [];
-    for (let j = 0; j < grid[1]; j++) {
-      currentNode = createNode(i, j);
-      currentRow.push(currentNode);
+  function createGrid() {
+    nodeGrid = [];
+    for (let i = 0; i < grid[0]; i++) {
+      let currentRow = [];
+      for (let j = 0; j < grid[1]; j++) {
+        currentNode = createNode(i, j);
+        currentRow.push(currentNode);
+      }
+      nodeGrid.push(currentRow);
     }
-    nodeGrid.push(currentRow);
+  }
+
+  function resetBoard() {
+    runningTimeouts.forEach((t) => clearTimeout(t));
+    createGrid();
+    reset++;
+  }
+
+  function clearPath() {
+    runningTimeouts.forEach((t) => clearTimeout(t));
+    nodeGrid.forEach((e) =>
+      e.forEach((n) => {
+        n.isVisited = false;
+        n.distance = Infinity;
+        n.previousNode = null;
+      })
+    );
+    reset++;
   }
 
   function createNode(row: number, col: number) {
@@ -48,9 +63,14 @@
     };
   }
 
-  function startSearch(Algorithm) {
-    switch (Algorithm) {
+  function startSearch() {
+    let algorithm = document.getElementById("algSelector") as HTMLSelectElement;
+    switch (algorithm.value) {
+      case "":
+        alert("Select an algorithm");
+        break;
       case "dijkstra":
+        console.table(nodeGrid[10][12]);
         const visitedNodesInOrder = startDijkstra(
           nodeGrid,
           nodeGrid[START_NODE_COL][START_NODE_ROW],
@@ -73,27 +93,33 @@
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       //Animate shortest path nodes
       if (i === visitedNodesInOrder.length) {
-        setTimeout(() => {
-          animateShortestPath(nodesInShortestPathOrder);
-        }, 15 * i);
+        runningTimeouts.push(
+          setTimeout(() => {
+            animateShortestPath(nodesInShortestPathOrder);
+          }, 15 * i)
+        );
         return;
       }
 
       //Animate visited nodes
-      setTimeout(() => {
-        const node = visitedNodesInOrder[i];
-        console.log("Current node to animate: " + node);
-        if (node != undefined) addVisitedClass(node);
-      }, 15 * i);
+      runningTimeouts.push(
+        setTimeout(() => {
+          const node = visitedNodesInOrder[i];
+          console.log("Current node to animate: " + node);
+          if (node != undefined) addVisitedClass(node);
+        }, 15 * i)
+      );
     }
   }
 
   function animateShortestPath(nodesInShortestPathOrder) {
     for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
-      setTimeout(() => {
-        const node = nodesInShortestPathOrder[i];
-        addShortestNodeClass(node);
-      }, 50 * i);
+      runningTimeouts.push(
+        setTimeout(() => {
+          const node = nodesInShortestPathOrder[i];
+          addShortestNodeClass(node);
+        }, 50 * i)
+      );
     }
   }
 
@@ -118,6 +144,7 @@
   }
 
   function interact(e) {
+    console.log("clicked node");
     switch (interactState) {
       case "wall":
         setWall(e);
@@ -133,6 +160,19 @@
         break;
       default:
         break;
+    }
+  }
+
+  function setWall(e) {
+    if (mouseDown) {
+      let id = e.srcElement.id;
+      let nodeCol = id.split("_")[0];
+      let nodeRow = id.split("_")[1];
+      let node = nodeGrid[nodeRow][nodeCol];
+
+      node.isWall = true;
+      document.getElementById(id).classList.add("wall");
+      console.log("Wall added to: " + id);
     }
   }
 
@@ -153,56 +193,70 @@
     }
   }
 
-  function setWall(e) {
-    if (mouseDown) {
-      let id = e.srcElement.id;
-      let nodeCol = id.split("_")[0];
-      let nodeRow = id.split("_")[1];
-      let node = nodeGrid[nodeRow][nodeCol];
+  document.body.onmousedown = () => {
+    console.log("Fired mouse event");
+    mouseDown = true;
+  };
 
-      node.isWall = true;
-      document.getElementById(id).classList.add("wall");
-      console.log("Wall added to: " + id);
-    }
-  }
-
-  function removeWall(e) {
-    if (mouseDown) {
-      let id = e.srcElement.id;
-      let nodeCol = id.split("_")[0];
-      let nodeRow = id.split("_")[1];
-      let node = nodeGrid[nodeRow][nodeCol];
-
-      node.isWall = false;
-      document.getElementById(id).classList.remove("wall");
-      console.log("Wall removed at: " + id);
-    }
-  }
+  document.body.onmouseup = () => {
+    mouseDown = false;
+  };
 </script>
 
-<button on:click={() => startSearch("dijkstra")}>Start</button>
-<button on:click={() => (interactState = "wall")}>Wall</button>
-<button on:click={() => (interactState = "eraser")}>Eraser</button>
-<div class="grid" style="display: flex; justify-content: center;">
-  <div
-    class="container"
-    style="grid-template-rows: {MAX_row} ; grid-template-columns: {MAX_col};"
-  >
-    {#each nodeGrid as currRow, i (i)}
-      {#each currRow as currNode, j (j)}
-        <div
-          on:mousemove={(e) => interact(e)}
-          id="{i}_{j}"
-          class:visited={false}
-          class:shortest={false}
-          class:finish={currNode.isFinish}
-          class:start={currNode.isStart}
-          class:wall={false}
-        />
-      {/each}
-    {/each}
-  </div>
+<div id="button-panel" style="padding-bottom: 5px">
+  <button on:click={() => startSearch()}>Start</button>
+  {#if interactState == "wall"}
+    <button
+      style="background-color:lightslategray; border-inline: 1rem solid black;"
+      on:click={() => (interactState = "wall")}>Wall</button
+    >
+  {:else}
+    <button on:click={() => (interactState = "wall")}>Wall</button>
+  {/if}
+
+  {#if interactState == "eraser"}
+    <button
+      style="background-color:lightslategray; border-inline: 1rem solid black;"
+      on:click={() => (interactState = "eraser")}>Eraser</button
+    >
+  {:else}
+    <button on:click={() => (interactState = "eraser")}>Eraser</button>
+  {/if}
+
+  <button on:click={() => clearPath()}>Clear Path</button>
+  <button on:click={() => resetBoard()}>Clear Board</button>
 </div>
+{#key reset}
+  <div
+    ondragstart="return false;"
+    ondrop="return false;"
+    class="grid"
+    style="display: flex; justify-content: center;"
+  >
+    <div
+      class="container"
+      style="grid-template-rows: {MAX_row} ; grid-template-columns: {MAX_col};"
+    >
+      {#each nodeGrid as currRow, i (i)}
+        {#each currRow as currNode, j (j)}
+          <div class="gridBox">
+            <div
+              class="gridNode"
+              on:mousemove={(e) => interact(e)}
+              on:mousedown={(e) => interact(e)}
+              id="{j}_{i}"
+              class:visited={false}
+              class:shortest={false}
+              class:finish={currNode.isFinish}
+              class:start={currNode.isStart}
+              class:wall={currNode.isWall}
+            />
+          </div>
+        {/each}
+      {/each}
+    </div>
+  </div>
+{/key}
 
 <style>
   .container {
@@ -216,29 +270,54 @@
     background: rgb(255, 255, 255);
   }
 
-  .container div {
-    background: #fff;
+  .container div.gridBox {
+    background-color: #ffffff;
     outline: 1px solid black;
     height: 20px;
     width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  @keyframes transitionColor {
-    from {
-      background: rgb(67, 34, 255);
-      width: 10px;
-      height: 10px;
-      border-radius: 100%;
-    }
-    to {
-      background: var(--clrVisited);
-      border-radius: 0%;
-      widows: 20px;
-      height: 20px;
-      transform: rotate(360deg);
-    }
+  .container div.gridNode {
+    background-color: rgb(255, 255, 255);
+    width: 100%;
+    height: 100%;
   }
 
+  .container div.gridNode.finish {
+    background-color: red;
+  }
+
+  .container div.gridNode.start {
+    background-color: green;
+  }
+
+  .container div.wall {
+    background-color: rgb(46, 46, 46);
+  }
+
+  .container div:hover {
+    background-color: rgb(163, 163, 163);
+  }
+
+  button {
+    background-color: DodgerBlue;
+    border: none;
+    color: white;
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 17px;
+    cursor: pointer;
+    font-weight: 400;
+  }
+
+  button:hover {
+    background-color: RoyalBlue;
+  }
+
+  /* ########## ANIMATION CSS ##########  */
   @keyframes shortestPathGlow {
     from {
       background-color: #ffcccc;
@@ -248,28 +327,34 @@
     }
   }
 
+  @keyframes transitionColor {
+    0% {
+      background: rgb(0, 69, 173);
+      border-radius: 100%;
+      transform: scale(0.2);
+    }
+    50% {
+      background: rgb(49, 197, 165);
+      border-radius: 45%;
+    }
+    100% {
+      background: var(--clrVisited);
+      border-radius: 0%;
+      transform: scale(0.9);
+      /*transform: rotate(360deg);*/
+    }
+  }
+
   .container div.visited {
-    background: var(--clrVisited);
+    background-color: var(--clrVisited);
     animation-name: transitionColor;
     animation-duration: 1.3s;
   }
 
   .container div.shortest {
-    background: rgba(255, 106, 136, 0.842);
+    background-color: rgba(255, 106, 136, 0.842);
     animation-name: shortestPathGlow;
     animation-duration: 3s;
     animation-iteration-count: infinite;
-  }
-
-  .container div.finish {
-    background: red;
-  }
-
-  .container div.start {
-    background: green;
-  }
-
-  .container div.wall {
-    background: rgb(46, 46, 46);
   }
 </style>
