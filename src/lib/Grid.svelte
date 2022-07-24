@@ -16,8 +16,9 @@
   let interactState = "wall";
   let reset = 0;
   let runningTimeouts = [];
-
   let mouseDown = false;
+
+  //Setup initial grid
   createGrid();
   //Setup 2D grid array
   function createGrid() {
@@ -29,6 +30,42 @@
         currentRow.push(currentNode);
       }
       nodeGrid.push(currentRow);
+    }
+  }
+
+  function createNode(row: number, col: number) {
+    return {
+      row: row,
+      col: col,
+      isStart: row === START_NODE_ROW && col === START_NODE_COL,
+      isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
+      isVisited: false,
+      distance: Infinity,
+      isWall: false,
+      previousNode: null,
+    };
+  }
+
+  function interact(e) {
+    switch (interactState) {
+      case "wall":
+        setWall(e);
+        break;
+      case "setStart":
+        setStart(e);
+        clearPath();
+        break;
+      case "setFinish":
+        setFinish(e);
+        clearPath();
+        break;
+      case "weight":
+        break;
+      case "eraser":
+        remove(e);
+        break;
+      default:
+        break;
     }
   }
 
@@ -50,19 +87,6 @@
     reset++;
   }
 
-  function createNode(row: number, col: number) {
-    return {
-      row: row,
-      col: col,
-      isStart: row === START_NODE_ROW && col === START_NODE_COL,
-      isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
-      isVisited: false,
-      distance: Infinity,
-      isWall: false,
-      previousNode: null,
-    };
-  }
-
   function startSearch() {
     let algorithm = document.getElementById("algSelector") as HTMLSelectElement;
     switch (algorithm.value) {
@@ -81,29 +105,6 @@
         animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
         break;
 
-      default:
-        break;
-    }
-  }
-
-  function interact(e) {
-    switch (interactState) {
-      case "wall":
-        setWall(e);
-        break;
-      case "setStart":
-        setStart(e);
-        clearPath();
-        break;
-      case "setFinish":
-        setFinish(e);
-        clearPath();
-        break;
-      case "weight":
-        break;
-      case "eraser":
-        remove(e);
-        break;
       default:
         break;
     }
@@ -349,11 +350,13 @@
     background-color: green;
   }
 
-  .container div.wall {
+  .container div.gridNode.wall {
+    animation-name: addWallAnimation;
+    animation-duration: 0.2s;
     background-color: rgb(46, 46, 46);
   }
 
-  .container div:hover {
+  .container div.gridNode:hover {
     background-color: rgb(163, 163, 163);
   }
 
@@ -403,6 +406,24 @@
     }
     100% {
       background: var(--clrVisited);
+      border-radius: 0%;
+      transform: scale(0.9);
+      /*transform: rotate(360deg);*/
+    }
+  }
+
+  @keyframes addWallAnimation {
+    0% {
+      background-color: rgb(211, 211, 211);
+      border-radius: 100%;
+      transform: scale(0.2);
+    }
+    50% {
+      background-color: rgb(119, 119, 119);
+      border-radius: 45%;
+    }
+    100% {
+      background-color: rgb(46, 46, 46);
       border-radius: 0%;
       transform: scale(0.9);
       /*transform: rotate(360deg);*/
