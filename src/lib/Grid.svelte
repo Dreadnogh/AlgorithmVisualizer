@@ -19,6 +19,7 @@
   let reset = 0;
   let runningTimeouts = [];
   let mouseDown = false;
+  let actionsCounter = 0;
 
   //Setup initial grid
   createGrid();
@@ -73,12 +74,14 @@
   }
 
   function resetBoard() {
+    actionsCounter = 0;
     runningTimeouts.forEach((t) => clearTimeout(t));
     createGrid();
     reset++;
   }
 
   function clearPath() {
+    actionsCounter = 0;
     runningTimeouts.forEach((t) => clearTimeout(t));
     nodeGrid.forEach((e) =>
       e.forEach((n) => {
@@ -217,6 +220,7 @@
       //Animate visited nodes
       runningTimeouts.push(
         setTimeout(() => {
+          actionsCounter++;
           const node = visitedNodesInOrder[i];
           if (node != undefined) addVisitedClass(node);
         }, 15 * i)
@@ -293,6 +297,7 @@
     <button on:click={() => (interactState = "setFinish")}>SET Finish</button>
   {/if}
 </div>
+<p style="font-weight:bold">Actions Counter: {actionsCounter}</p>
 {#key reset}
   <div
     ondragstart="return false;"
@@ -334,8 +339,8 @@
 <style>
   .container {
     display: grid;
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 2px;
+    border: 3px solid rgb(0, 0, 0);
+    border-radius: 5px;
     width: 800px;
     grid-gap: 0px;
     row-gap: 0px;
