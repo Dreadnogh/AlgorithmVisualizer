@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { is_empty } from "svelte/internal";
+
   import {
     startDijkstra,
     getNodesInShortestPathOrder,
@@ -47,22 +49,23 @@
   }
 
   function interact(e) {
+    let id = getElementID(e);
     switch (interactState) {
       case "wall":
-        setWall(e);
+        if (id) setWall(id);
         break;
       case "setStart":
-        setStart(e);
+        if (id) setStart(id);
         clearPath();
         break;
       case "setFinish":
-        setFinish(e);
+        if (id) setFinish(id);
         clearPath();
         break;
       case "weight":
         break;
       case "eraser":
-        remove(e);
+        if (id) remove(id);
         break;
       default:
         break;
@@ -89,6 +92,7 @@
 
   function startSearch() {
     let algorithm = document.getElementById("algSelector") as HTMLSelectElement;
+
     switch (algorithm.value) {
       case "":
         alert("Select an algorithm");
@@ -110,8 +114,7 @@
     }
   }
 
-  function setStart(e) {
-    let id = e.srcElement.id;
+  function setStart(id: string) {
     let nodeCol = id.split("_")[0];
     let nodeRow = id.split("_")[1];
     let node = nodeGrid[nodeRow][nodeCol];
@@ -130,8 +133,7 @@
     document.getElementById(id).classList.add("start");
   }
 
-  function setFinish(e) {
-    let id = e.srcElement.id;
+  function setFinish(id: string) {
     let nodeCol = id.split("_")[0];
     let nodeRow = id.split("_")[1];
     let node = nodeGrid[nodeRow][nodeCol];
@@ -150,8 +152,7 @@
     document.getElementById(id).classList.add("finish");
   }
 
-  function setWall(e) {
-    let id = e.srcElement.id;
+  function setWall(id: string) {
     let nodeCol = id.split("_")[0];
     let nodeRow = id.split("_")[1];
     let node = nodeGrid[nodeRow][nodeCol];
@@ -161,12 +162,10 @@
     ) {
       node.isWall = true;
       document.getElementById(id).classList.add("wall");
-      console.log("Wall added to: " + id);
     }
   }
 
-  function remove(e) {
-    let id = e.srcElement.id;
+  function remove(id: string) {
     let nodeCol = id.split("_")[0];
     let nodeRow = id.split("_")[1];
     let node = nodeGrid[nodeRow][nodeCol];
@@ -177,7 +176,21 @@
     document.getElementById(id).classList.remove("wall");
     document.getElementById(id).classList.remove("finish");
     document.getElementById(id).classList.remove("start");
-    console.log("node classes erased " + id);
+  }
+
+  function getElementID(element) {
+    let id = null;
+    if (element instanceof TouchEvent) {
+      let currentHover = element.changedTouches[0];
+      let currentObj = document.elementFromPoint(
+        currentHover.clientX,
+        currentHover.clientY
+      );
+      id = currentObj.id;
+    } else {
+      id = element.srcElement.id;
+    }
+    return id;
   }
 
   document.body.onmousedown = () => {
@@ -244,7 +257,7 @@
 </script>
 
 <div id="button-panel" style="padding-bottom: 5px">
-  <button on:click={() => startSearch()}>Start</button>
+  <button on:click={() => startSearch()}>START</button>
   {#if interactState == "wall"}
     <button class="selected" on:click={() => (interactState = "wall")}
       >Wall</button
@@ -298,6 +311,10 @@
               class="gridNode"
               on:mousemove={(e) => {
                 if (mouseDown) interact(e);
+              }}
+              on:touchmove={(e) => {
+                let id = getElementID(e);
+                interact(e);
               }}
               on:mousedown={(e) => interact(e)}
               id="{j}_{i}"
@@ -369,6 +386,7 @@
     font-size: 17px;
     cursor: pointer;
     font-weight: 400;
+    min-width: 7vw;
   }
 
   button.selected {
