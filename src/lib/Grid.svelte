@@ -20,6 +20,7 @@
   let runningTimeouts = [];
   let mouseDown = false;
   let actionsCounter = 0;
+  let animationSpeed = 15;
 
   //Setup initial grid
   createGrid();
@@ -212,7 +213,7 @@
         runningTimeouts.push(
           setTimeout(() => {
             animateShortestPath(nodesInShortestPathOrder);
-          }, 15 * i)
+          }, animationSpeed * i)
         );
         return;
       }
@@ -223,7 +224,7 @@
           actionsCounter++;
           const node = visitedNodesInOrder[i];
           if (node != undefined) addVisitedClass(node);
-        }, 15 * i)
+        }, animationSpeed * i)
       );
     }
   }
@@ -262,6 +263,10 @@
 
 <div id="button-panel" style="padding-bottom: 5px">
   <button on:click={() => startSearch()}>START</button>
+  <button on:click={() => clearPath()}>Clear Path</button>
+  <button on:click={() => resetBoard()}>Clear Board</button>
+</div>
+<div style="padding-bottom: 5px">
   {#if interactState == "wall"}
     <button class="selected" on:click={() => (interactState = "wall")}
       >Wall</button
@@ -269,7 +274,6 @@
   {:else}
     <button on:click={() => (interactState = "wall")}>Wall</button>
   {/if}
-
   {#if interactState == "eraser"}
     <button class="selected" on:click={() => (interactState = "eraser")}
       >Eraser</button
@@ -277,11 +281,6 @@
   {:else}
     <button on:click={() => (interactState = "eraser")}>Eraser</button>
   {/if}
-
-  <button on:click={() => clearPath()}>Clear Path</button>
-  <button on:click={() => resetBoard()}>Clear Board</button>
-</div>
-<div style="padding-bottom: 5px">
   {#if interactState == "setStart"}
     <button class="selected" on:click={() => (interactState = "setStart")}
       >SET Start</button
@@ -296,6 +295,18 @@
   {:else}
     <button on:click={() => (interactState = "setFinish")}>SET Finish</button>
   {/if}
+</div>
+<div class="slidecontainer">
+  <p style="font-weight:bold">Animation Delay(ms): {animationSpeed}</p>
+  <input
+    style="max-width: 35%"
+    bind:value={animationSpeed}
+    type="range"
+    min="1"
+    max="100"
+    class="slider"
+    id="myRange"
+  />
 </div>
 <p style="font-weight:bold">Actions Counter: {actionsCounter}</p>
 {#key reset}
@@ -351,8 +362,8 @@
   .container div.gridBox {
     background-color: #ffffff;
     outline: 1px solid black;
-    height: 20px;
-    width: 20px;
+    height: 100%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -360,8 +371,11 @@
 
   .container div.gridNode {
     background-color: rgb(255, 255, 255);
-    width: 100%;
-    height: 100%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .container div.gridNode.finish {
@@ -414,6 +428,29 @@
     }
   }
 
+  @keyframes addWallAnimation {
+    0% {
+      background-color: rgb(211, 211, 211);
+      border-radius: 100%;
+      transform: scale(0.2);
+    }
+    50% {
+      background-color: rgb(119, 119, 119);
+    }
+    100% {
+      background-color: rgb(46, 46, 46);
+      border-radius: 0%;
+      transform: scale(0.9);
+      /*transform: rotate(360deg);*/
+    }
+  }
+
+  .container div.visited {
+    background-color: var(--clrVisited);
+    animation-name: transitionColor;
+    animation-duration: 1.5s;
+  }
+
   @keyframes transitionColor {
     0% {
       background: rgb(251, 255, 0);
@@ -427,36 +464,15 @@
       background: rgb(49, 197, 165);
       border-radius: 45%;
     }
+    80% {
+      /*background: rgb(196, 243, 255);*/
+      border-radius: 0%;
+      /*transform: rotate(360deg);*/
+    }
     100% {
       background: var(--clrVisited);
-      border-radius: 0%;
-      transform: scale(0.9);
-      /*transform: rotate(360deg);*/
+      transform: scale(0.95);
     }
-  }
-
-  @keyframes addWallAnimation {
-    0% {
-      background-color: rgb(211, 211, 211);
-      border-radius: 100%;
-      transform: scale(0.2);
-    }
-    50% {
-      background-color: rgb(119, 119, 119);
-      border-radius: 45%;
-    }
-    100% {
-      background-color: rgb(46, 46, 46);
-      border-radius: 0%;
-      transform: scale(0.9);
-      /*transform: rotate(360deg);*/
-    }
-  }
-
-  .container div.visited {
-    background-color: var(--clrVisited);
-    animation-name: transitionColor;
-    animation-duration: 1.3s;
   }
 
   .container div.shortest {
@@ -464,5 +480,35 @@
     animation-name: shortestPathGlow;
     animation-duration: 3s;
     animation-iteration-count: infinite;
+  }
+
+  .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: 0.2s;
+    transition: opacity 0.2s;
+  }
+
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #04aa6d;
+    cursor: pointer;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #04aa6d;
+    cursor: pointer;
   }
 </style>
