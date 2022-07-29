@@ -426,10 +426,11 @@
   .button-panel {
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: center;
     flex-direction: row;
     flex-wrap: wrap;
     row-gap: 5px;
+    column-gap: 2px;
     padding-bottom: 5px;
   }
 
