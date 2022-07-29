@@ -288,12 +288,12 @@
   }
 </script>
 
-<div id="button-panel" style="padding-bottom: 5px">
+<div class="button-panel">
   <button on:click={() => startSearch()}>START</button>
   <button on:click={() => clearPath()}>Clear Path</button>
   <button on:click={() => resetBoard()}>Clear Board</button>
 </div>
-<div style="padding-bottom: 5px">
+<div class="button-panel">
   {#if interactState == "wall"}
     <button class="selected" on:click={() => (interactState = "wall")}
       >Wall</button
@@ -423,6 +423,16 @@
     background-color: rgb(163, 163, 163);
   }
 
+  .button-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: 5px;
+    padding-bottom: 5px;
+  }
+
   button {
     background-color: DodgerBlue;
     border: none;
@@ -542,6 +552,7 @@
   @media only screen and (max-device-width: 480px) {
     .container {
       display: grid;
+      grid-auto-rows: 1fr;
       border: 2px solid rgb(0, 0, 0);
       border-radius: 5px;
       width: 100%;
@@ -549,10 +560,22 @@
       row-gap: 0px;
       height: 100%;
       background: rgb(255, 255, 255);
+      overflow: hidden;
     }
     .container div.gridNode {
-      width: 10px;
-      height: 10px;
+      width: 100%px;
+      height: 100%px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .container div.gridBox {
+      background-color: #ffffff;
+      overflow: hidden;
+      height: 13px;
+      width: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
