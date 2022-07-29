@@ -11,11 +11,14 @@
     getNodesInShortestPathOrderAstar,
   } from "../algorithms/Astar.js";
 
-  let START_NODE_ROW = 15;
-  let START_NODE_COL = 14;
-  let FINISH_NODE_ROW = 24;
-  let FINISH_NODE_COL = 25;
+  let START_NODE_ROW = 5;
+  let START_NODE_COL = 4;
+  let FINISH_NODE_ROW = 14;
+  let FINISH_NODE_COL = 15;
   let grid = [40, 40];
+  if (screen.width < 420) {
+    grid = [25, 25];
+  }
   $: MAX_col = `repeat(${grid[1]}, 1fr)`;
   $: MAX_row = `repeat(${grid[0]}, 1fr)`;
   let nodeGrid = [];
@@ -395,8 +398,8 @@
 
   .container div.gridNode {
     background-color: rgb(255, 255, 255);
-    width: 20px;
-    height: 20px;
+    width: 99%;
+    height: 99%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -534,5 +537,25 @@
     border-radius: 50%;
     background: #04aa6d;
     cursor: pointer;
+  }
+
+  @media only screen and (max-device-width: 480px) {
+    .container {
+      display: grid;
+      border: 2px solid rgb(0, 0, 0);
+      border-radius: 5px;
+      width: 100%;
+      grid-gap: 0px;
+      row-gap: 0px;
+      height: 100%;
+      background: rgb(255, 255, 255);
+    }
+    .container div.gridNode {
+      width: 10px;
+      height: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 </style>
