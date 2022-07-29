@@ -9,7 +9,7 @@
   import {
     startAstar,
     getNodesInShortestPathOrderAstar,
-  } from "../algorithms/Astar_new.js";
+  } from "../algorithms/Astar.js";
 
   let START_NODE_ROW = 15;
   let START_NODE_COL = 14;
