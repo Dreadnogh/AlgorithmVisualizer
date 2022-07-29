@@ -53,7 +53,7 @@ function getAllNodes(grid) {
   return nodes;
 }
 
-export function getNodesInShortestPathOrder(finishNode) {
+export function getNodesInShortestPathOrderDijkstra(finishNode) {
   console.log("Started to find shortest path");
 
   const nodesInShortestPathOrder = [];

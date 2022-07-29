@@ -3,8 +3,13 @@
 
   import {
     startDijkstra,
-    getNodesInShortestPathOrder,
+    getNodesInShortestPathOrderDijkstra,
   } from "../algorithms/Dijkstra.js";
+
+  import {
+    startAstar,
+    getNodesInShortestPathOrderAstar,
+  } from "../algorithms/Astar_new.js";
 
   let START_NODE_ROW = 15;
   let START_NODE_COL = 14;
@@ -47,6 +52,7 @@
       distance: Infinity,
       isWall: false,
       previousNode: null,
+      shortest: false,
     };
   }
 
@@ -96,21 +102,35 @@
 
   function startSearch() {
     let algorithm = document.getElementById("algSelector") as HTMLSelectElement;
-
+    let visitedNodesInOrder = [];
+    let nodesInShortestPathOrder = [];
     switch (algorithm.value) {
       case "":
         alert("Select an algorithm");
         break;
       case "dijkstra":
-        const visitedNodesInOrder = startDijkstra(
+        visitedNodesInOrder = startDijkstra(
           nodeGrid,
           nodeGrid[START_NODE_ROW][START_NODE_COL],
           nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
         );
-        const nodesInShortestPathOrder = getNodesInShortestPathOrder(
+        nodesInShortestPathOrder = getNodesInShortestPathOrderDijkstra(
           nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
         );
-        animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
+        animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+        break;
+
+      case "astar":
+        visitedNodesInOrder = startAstar(
+          nodeGrid,
+          nodeGrid[START_NODE_ROW][START_NODE_COL],
+          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
+        );
+        nodesInShortestPathOrder = getNodesInShortestPathOrderAstar(
+          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL],
+          nodeGrid
+        );
+        animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
         break;
 
       default:
@@ -167,6 +187,10 @@
       node.isWall = true;
       document.getElementById(id).classList.add("wall");
     }
+    let distance =
+      Math.abs(node.row - FINISH_NODE_ROW) +
+      Math.abs(node.col - FINISH_NODE_COL);
+    console.log("Euclidian distance to finish: " + distance);
   }
 
   function remove(id: string) {
@@ -206,7 +230,7 @@
   };
 
   // ################ ANIMATION ################
-  function animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
+  function animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder) {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       //Animate shortest path nodes
       if (i === visitedNodesInOrder.length) {
@@ -311,7 +335,7 @@
 <p style="font-weight:bold">Actions Counter: {actionsCounter}</p>
 {#key reset}
   <div
-    ondragstart="return false;"
+    dragstart="return false;"
     ondrop="return false;"
     class="grid"
     style="display: flex; justify-content: center;"
