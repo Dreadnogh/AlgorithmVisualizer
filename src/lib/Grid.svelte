@@ -459,10 +459,10 @@
   /* ########## ANIMATION CSS ##########  */
   @keyframes shortestPathGlow {
     from {
-      background-color: #ffcccc;
+      background: #ffcccc;
     }
     to {
-      background-color: rgba(255, 106, 136, 0.842);
+      background: rgba(255, 106, 136, 0.842);
     }
   }
 
@@ -484,7 +484,7 @@
   }
 
   .container div.visited {
-    background-color: var(--clrVisited);
+    background: radial-gradient(var(--clrVisited), #88fff5);
     animation-name: transitionColor;
     animation-duration: 1.5s;
   }
@@ -496,20 +496,22 @@
     2% {
       background: rgb(0, 69, 173);
       border-radius: 100%;
-      transform: scale(0.2);
+      height: 10%;
+      width: 10%;
+      /*transform: scale(0.2);*/
     }
     50% {
+      height: 80%;
+      width: 80%;
       background: rgb(49, 197, 165);
-      border-radius: 45%;
-    }
-    80% {
-      /*background: rgb(196, 243, 255);*/
-      border-radius: 0%;
-      /*transform: rotate(360deg);*/
     }
     100% {
-      background: var(--clrVisited);
-      transform: scale(0.95);
+      height: 100%;
+      width: 100%;
+      border-radius: 0%;
+
+      /*background: var(--clrVisited);*/
+      /*transform: scale(0.9);*/
     }
   }
 
