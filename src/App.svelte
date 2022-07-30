@@ -15,6 +15,9 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
       Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     --clrVisited: rgb(89, 212, 228);
+    --clrBtn: DodgerBlue;
+    --clrBackground: rgb(81, 81, 104);
+    --clrText: white;
   }
 
   main {

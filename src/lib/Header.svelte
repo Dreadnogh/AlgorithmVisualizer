@@ -23,6 +23,7 @@
 
 <style>
   .header {
+    font-weight: bold;
     height: 40px;
     background: rgb(0, 188, 221);
     margin-bottom: 5px;

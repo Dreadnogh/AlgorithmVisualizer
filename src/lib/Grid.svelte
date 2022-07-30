@@ -310,10 +310,14 @@
   {/if}
   {#if interactState == "setStart"}
     <button class="selected" on:click={() => (interactState = "setStart")}
-      >SET Start</button
-    >
+      >SET Start
+    </button>
   {:else}
-    <button on:click={() => (interactState = "setStart")}>SET Start</button>
+    <button on:click={() => (interactState = "setStart")}
+      >SET Start <div
+        style="min-width: 15px; min-height 15px; background-color: green"
+      />
+    </button>
   {/if}
   {#if interactState == "setFinish"}
     <button class="selected" on:click={() => (interactState = "setFinish")}
@@ -435,7 +439,7 @@
   }
 
   button {
-    background-color: DodgerBlue;
+    background-color: var(--clrBtn);
     border: none;
     color: white;
     padding: 12px 16px;
@@ -448,12 +452,16 @@
 
   button.selected {
     background-color: lightslategray;
-    border-inline: 1rem solid DodgerBlue;
+    border-inline: 1rem solid var(--clrBtn);
     font-weight: bold;
   }
 
   button:hover {
     background-color: RoyalBlue;
+  }
+
+  p {
+    color: var(--clrText);
   }
 
   /* ########## ANIMATION CSS ##########  */
@@ -527,7 +535,7 @@
     width: 100%;
     height: 15px;
     border-radius: 5px;
-    background: #d3d3d3;
+    background: #cccccc;
     outline: none;
     opacity: 0.7;
     -webkit-transition: 0.2s;
@@ -540,7 +548,7 @@
     width: 25px;
     height: 25px;
     border-radius: 50%;
-    background: #04aa6d;
+    background: var(--clrBtn);
     cursor: pointer;
   }
 
@@ -548,7 +556,7 @@
     width: 25px;
     height: 25px;
     border-radius: 50%;
-    background: #04aa6d;
+    background: var(--clrBtn);
     cursor: pointer;
   }
 
