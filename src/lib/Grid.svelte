@@ -342,8 +342,7 @@
 <p style="font-weight:bold">Actions Counter: {actionsCounter}</p>
 {#key reset}
   <div
-    dragstart="return false;"
-    ondrop="return false;"
+    ondragstart="return false"
     class="grid"
     style="display: flex; justify-content: center;"
   >
