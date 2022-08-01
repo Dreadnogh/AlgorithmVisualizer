@@ -24,11 +24,11 @@
   let nodeGrid = [];
   let currentNode = null;
   let interactState = "wall";
-  let reset = 0;
   let runningTimeouts = [];
   let mouseDown = false;
   let actionsCounter = 0;
   let animationSpeed = 15;
+  let reset = 0;
 
   //Setup initial grid
   createGrid();
