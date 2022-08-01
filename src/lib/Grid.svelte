@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { algoStore } from "./algoStore";
+  import GridNode from "./GridNode.svelte";
+  import type { Node } from "./Models/Models";
   import { is_empty } from "svelte/internal";
-
   import {
     startDijkstra,
     getNodesInShortestPathOrderDijkstra,
@@ -20,7 +22,7 @@
   }
   $: MAX_col = `repeat(${grid[1]}, 1fr)`;
   $: MAX_row = `repeat(${grid[0]}, 1fr)`;
-  let nodeGrid = [];
+  let nodeGrid: Node[][] = [];
   let currentNode = null;
   let interactState = "wall";
   let runningTimeouts = [];
@@ -35,7 +37,7 @@
   function createGrid() {
     nodeGrid = [];
     for (let i = 0; i < grid[0]; i++) {
-      let currentRow = [];
+      let currentRow: Node[] = [];
       for (let j = 0; j < grid[1]; j++) {
         currentNode = createNode(i, j);
         currentRow.push(currentNode);
@@ -44,7 +46,7 @@
     }
   }
 
-  function createNode(row: number, col: number) {
+  function createNode(row: number, col: number): Node {
     return {
       row: row,
       col: col,
@@ -58,23 +60,25 @@
     };
   }
 
-  function interact(e, currNode) {
+  function interact(event) {
+    let currNode = event.detail.currNode;
+    if (!currNode) return;
     switch (interactState) {
       case "wall":
-        if (currNode) setWall(currNode);
+        setWall(currNode);
         break;
       case "setStart":
-        if (currNode) setStart(currNode);
+        setStart(currNode);
         clearPath();
         break;
       case "setFinish":
-        if (currNode) setFinish(currNode);
+        setFinish(currNode);
         clearPath();
         break;
       case "weight":
         break;
       case "eraser":
-        if (currNode) remove(currNode);
+        remove(currNode);
         break;
       default:
         break;
@@ -95,6 +99,7 @@
       e.map((n) => {
         n.isVisited = false;
         n.shortest = false;
+        n.previousNode = null;
         return n;
       })
     );
@@ -102,33 +107,31 @@
   }
 
   function startSearch() {
-    let algorithm = document.getElementById("algSelector") as HTMLSelectElement;
+    let algorithm = $algoStore;
     let visitedNodesInOrder = [];
     let nodesInShortestPathOrder = [];
-    switch (algorithm.value) {
+    let startNode = nodeGrid[START_NODE_ROW][START_NODE_COL];
+    let finishNode = nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL];
+    switch (algorithm) {
       case "":
-        alert("Select an algorithm");
-        break;
-      case "dijkstra":
-        visitedNodesInOrder = startDijkstra(
-          nodeGrid,
-          nodeGrid[START_NODE_ROW][START_NODE_COL],
-          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
-        );
-        nodesInShortestPathOrder = getNodesInShortestPathOrderDijkstra(
-          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
+        visitedNodesInOrder = startAstar(nodeGrid, startNode, finishNode);
+        nodesInShortestPathOrder = getNodesInShortestPathOrderAstar(
+          finishNode,
+          nodeGrid
         );
         animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
         break;
+      case "dijkstra":
+        visitedNodesInOrder = startDijkstra(nodeGrid, startNode, finishNode);
+        nodesInShortestPathOrder =
+          getNodesInShortestPathOrderDijkstra(finishNode);
+        animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+        break;
 
-      case "astar":
-        visitedNodesInOrder = startAstar(
-          nodeGrid,
-          nodeGrid[START_NODE_ROW][START_NODE_COL],
-          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
-        );
+      case "a*":
+        visitedNodesInOrder = startAstar(nodeGrid, startNode, finishNode);
         nodesInShortestPathOrder = getNodesInShortestPathOrderAstar(
-          nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL],
+          finishNode,
           nodeGrid
         );
         animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
@@ -161,33 +164,18 @@
     nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL].isFinish = true;
   }
 
-  function setWall(currNode) {
+  function setWall(currNode: Node) {
     let { row, col } = currNode;
     if (currNode.isFinish) return;
     if (currNode.isStart) return;
     nodeGrid[row][col].isWall = true;
   }
 
-  function remove(currNode) {
+  function remove(currNode: Node) {
     let { row, col } = currNode;
     nodeGrid[row][col].isWall = false;
     nodeGrid[row][col].isFinish = false;
     nodeGrid[row][col].isStart = false;
-  }
-
-  function getElementID(element) {
-    let id = null;
-    if (element instanceof TouchEvent) {
-      let currentHover = element.changedTouches[0];
-      let currentObj = document.elementFromPoint(
-        currentHover.clientX,
-        currentHover.clientY
-      );
-      id = currentObj.id;
-    } else {
-      id = element.srcElement.id;
-    }
-    return id;
   }
 
   document.body.onmousedown = () => {
@@ -298,24 +286,7 @@
   >
     {#each nodeGrid as currRow, i (i)}
       {#each currRow as currNode, j (j)}
-        <div class="gridBox">
-          <div
-            class="gridNode"
-            on:mousemove={(e) => {
-              if (mouseDown) interact(e, currNode);
-            }}
-            on:touchmove={(e) => {
-              let id = getElementID(e);
-              interact(e, currNode);
-            }}
-            on:mousedown={(e) => interact(e, currNode)}
-            class:wall={currNode.isWall}
-            class:visited={currNode.isVisited}
-            class:shortest={currNode.shortest}
-            class:finish={currNode.isFinish}
-            class:start={currNode.isStart}
-          />
-        </div>
+        <GridNode {currNode} {mouseDown} on:interact={interact} />
       {/each}
     {/each}
   </div>
@@ -331,43 +302,6 @@
     row-gap: 0px;
     height: 800px;
     background: rgb(255, 255, 255);
-  }
-
-  .container div.gridBox {
-    background-color: #ffffff;
-    outline: 1px solid black;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .container div.gridNode {
-    background-color: rgb(255, 255, 255);
-    width: 99%;
-    height: 99%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .container div.gridNode.finish {
-    background-color: red;
-  }
-
-  .container div.gridNode.start {
-    background-color: green;
-  }
-
-  .container div.gridNode.wall {
-    animation-name: addWallAnimation;
-    animation-duration: 0.2s;
-    background-color: rgb(46, 46, 46) !important;
-  }
-
-  .container div.gridNode:hover {
-    background-color: rgb(163, 163, 163);
   }
 
   .button-panel {
@@ -440,71 +374,6 @@
 
   /* ########## ANIMATION CSS ##########  */
 
-  @keyframes addWallAnimation {
-    0% {
-      background-color: rgb(211, 211, 211);
-      border-radius: 100%;
-      transform: scale(0.2);
-    }
-    50% {
-      background-color: rgb(119, 119, 119);
-    }
-    100% {
-      background-color: rgb(46, 46, 46);
-      border-radius: 0%;
-      transform: scale(0.9);
-      /*transform: rotate(360deg);*/
-    }
-  }
-
-  .container div.visited {
-    background: radial-gradient(var(--clrVisited), #88fff5);
-    animation-name: transitionColor;
-    animation-duration: 1.5s;
-  }
-
-  @keyframes transitionColor {
-    0% {
-      background: rgb(251, 255, 0);
-    }
-    2% {
-      background: rgb(0, 69, 173);
-      border-radius: 100%;
-      height: 10%;
-      width: 10%;
-      /*transform: scale(0.2);*/
-    }
-    50% {
-      height: 80%;
-      width: 80%;
-      background: rgb(49, 197, 165);
-    }
-    100% {
-      height: 100%;
-      width: 100%;
-      border-radius: 0%;
-
-      /*background: var(--clrVisited);*/
-      /*transform: scale(0.9);*/
-    }
-  }
-
-  @keyframes shortestPathGlow {
-    from {
-      background: #ffcccc;
-    }
-    to {
-      background: rgba(255, 106, 136, 0.842);
-    }
-  }
-
-  .container div.shortest {
-    background-color: rgba(255, 106, 136, 0.842);
-    animation-name: shortestPathGlow;
-    animation-duration: 3s;
-    animation-iteration-count: infinite;
-  }
-
   /* ########## MOBILE DEVICE ########## */
   @media only screen and (max-device-width: 480px) {
     .container {
@@ -518,24 +387,6 @@
       height: 100%;
       background: rgb(255, 255, 255);
       overflow: hidden;
-    }
-    .container div.gridNode {
-      width: 100%px;
-      height: 100%px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .container div.gridBox {
-      background-color: #ffffff;
-      overflow: hidden;
-      height: 13px;
-      width: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
   }
 </style>

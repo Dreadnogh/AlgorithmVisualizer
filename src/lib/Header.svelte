@@ -1,22 +1,16 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-  const dispatch = createEventDispatcher();
-
-  export let startPressed = false;
-  function startSearch() {
-    startPressed = true;
-  }
+  import { algoStore } from "./algoStore";
+  let options = ["a*", "dijkstra", "unweighted", "weighted"];
 </script>
 
 <div class="header">
   <label
     >Algorithm
-    <select id="algSelector">
+    <select id="algSelector" bind:value={$algoStore}>
       <option value="" disabled selected>Select your option</option>
-      <option value="astar">A*</option>
-      <option value="dijkstra">Dijkstra</option>
-      <option value="unweighted">Unweighted</option>
-      <option value="weighted">Weighted</option>
+      {#each options as item}
+        <option value={item}>{item}</option>
+      {/each}
     </select>
   </label>
 </div>
