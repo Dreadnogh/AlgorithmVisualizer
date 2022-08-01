@@ -463,15 +463,37 @@
     color: var(--clrText);
   }
 
-  /* ########## ANIMATION CSS ##########  */
-  @keyframes shortestPathGlow {
-    from {
-      background: #ffcccc;
-    }
-    to {
-      background: rgba(255, 106, 136, 0.842);
-    }
+  .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #cccccc;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: 0.2s;
+    transition: opacity 0.2s;
   }
+
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: var(--clrBtn);
+    cursor: pointer;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: var(--clrBtn);
+    cursor: pointer;
+  }
+
+  /* ########## ANIMATION CSS ##########  */
 
   @keyframes addWallAnimation {
     0% {
@@ -522,6 +544,15 @@
     }
   }
 
+  @keyframes shortestPathGlow {
+    from {
+      background: #ffcccc;
+    }
+    to {
+      background: rgba(255, 106, 136, 0.842);
+    }
+  }
+
   .container div.shortest {
     background-color: rgba(255, 106, 136, 0.842);
     animation-name: shortestPathGlow;
@@ -529,36 +560,7 @@
     animation-iteration-count: infinite;
   }
 
-  .slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 15px;
-    border-radius: 5px;
-    background: #cccccc;
-    outline: none;
-    opacity: 0.7;
-    -webkit-transition: 0.2s;
-    transition: opacity 0.2s;
-  }
-
-  .slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: var(--clrBtn);
-    cursor: pointer;
-  }
-
-  .slider::-moz-range-thumb {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: var(--clrBtn);
-    cursor: pointer;
-  }
-
+  /* ########## MOBILE DEVICE ########## */
   @media only screen and (max-device-width: 480px) {
     .container {
       display: grid;
