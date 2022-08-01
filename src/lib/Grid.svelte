@@ -10,7 +10,6 @@
     startAstar,
     getNodesInShortestPathOrderAstar,
   } from "../algorithms/Astar.js";
-
   let START_NODE_ROW = 5;
   let START_NODE_COL = 4;
   let FINISH_NODE_ROW = 14;
@@ -59,24 +58,23 @@
     };
   }
 
-  function interact(e) {
-    let id = getElementID(e);
+  function interact(e, currNode) {
     switch (interactState) {
       case "wall":
-        if (id) setWall(id);
+        if (currNode) setWall(currNode);
         break;
       case "setStart":
-        if (id) setStart(id);
+        if (currNode) setStart(currNode);
         clearPath();
         break;
       case "setFinish":
-        if (id) setFinish(id);
+        if (currNode) setFinish(currNode);
         clearPath();
         break;
       case "weight":
         break;
       case "eraser":
-        if (id) remove(id);
+        if (currNode) remove(currNode);
         break;
       default:
         break;
@@ -92,12 +90,12 @@
 
   function clearPath() {
     actionsCounter = 0;
-    runningTimeouts.forEach((t) => clearTimeout(t));
-    nodeGrid.forEach((e) =>
-      e.forEach((n) => {
+    runningTimeouts.forEach((t, i) => clearTimeout(t));
+    nodeGrid = nodeGrid.map((e) =>
+      e.map((n) => {
         n.isVisited = false;
-        n.distance = Infinity;
-        n.previousNode = null;
+        n.shortest = false;
+        return n;
       })
     );
     reset++;
@@ -141,72 +139,40 @@
     }
   }
 
-  function setStart(id: string) {
-    let nodeCol = id.split("_")[0];
-    let nodeRow = id.split("_")[1];
-    let node = nodeGrid[nodeRow][nodeCol];
-
+  function setStart(currNode) {
+    let { row, col } = currNode;
     //Remove old start
-    let oldNode = nodeGrid[START_NODE_ROW][START_NODE_COL];
-    oldNode.isStart = false;
-    document
-      .getElementById(oldNode.col + "_" + oldNode.row)
-      .classList.remove("start");
+    nodeGrid[START_NODE_ROW][START_NODE_COL].isStart = false;
 
     //Add new start
-    START_NODE_ROW = node.row;
-    START_NODE_COL = node.col;
+    START_NODE_ROW = row;
+    START_NODE_COL = col;
     nodeGrid[START_NODE_ROW][START_NODE_COL].isStart = true;
-    document.getElementById(id).classList.add("start");
   }
 
-  function setFinish(id: string) {
-    let nodeCol = id.split("_")[0];
-    let nodeRow = id.split("_")[1];
-    let node = nodeGrid[nodeRow][nodeCol];
+  function setFinish(currNode) {
+    let { row, col } = currNode;
+    //Remove old start
+    nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL].isFinish = false;
 
-    //Remove old Finish
-    let oldNode = nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL];
-    oldNode.isFinish = false;
-    document
-      .getElementById(oldNode.col + "_" + oldNode.row)
-      .classList.remove("finish");
-
-    //Add new Finish
-    FINISH_NODE_ROW = node.row;
-    FINISH_NODE_COL = node.col;
+    //Add new start
+    FINISH_NODE_ROW = row;
+    FINISH_NODE_COL = col;
     nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL].isFinish = true;
-    document.getElementById(id).classList.add("finish");
   }
 
-  function setWall(id: string) {
-    let nodeCol = id.split("_")[0];
-    let nodeRow = id.split("_")[1];
-    let node = nodeGrid[nodeRow][nodeCol];
-    if (
-      node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
-      node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
-    ) {
-      node.isWall = true;
-      document.getElementById(id).classList.add("wall");
-    }
-    let distance =
-      Math.abs(node.row - FINISH_NODE_ROW) +
-      Math.abs(node.col - FINISH_NODE_COL);
-    console.log("Euclidian distance to finish: " + distance);
+  function setWall(currNode) {
+    let { row, col } = currNode;
+    if (currNode.isFinish) return;
+    if (currNode.isStart) return;
+    nodeGrid[row][col].isWall = true;
   }
 
-  function remove(id: string) {
-    let nodeCol = id.split("_")[0];
-    let nodeRow = id.split("_")[1];
-    let node = nodeGrid[nodeRow][nodeCol];
-
-    node.isWall = false;
-    node.isFinish = false;
-    node.isStart = false;
-    document.getElementById(id).classList.remove("wall");
-    document.getElementById(id).classList.remove("finish");
-    document.getElementById(id).classList.remove("start");
+  function remove(currNode) {
+    let { row, col } = currNode;
+    nodeGrid[row][col].isWall = false;
+    nodeGrid[row][col].isFinish = false;
+    nodeGrid[row][col].isStart = false;
   }
 
   function getElementID(element) {
@@ -272,8 +238,7 @@
       node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
       node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
     ) {
-      let element = document.getElementById(node.col + "_" + node.row);
-      element.classList.add("visited");
+      nodeGrid[node.row][node.col].isVisited = true;
     }
   }
 
@@ -282,50 +247,31 @@
       node != nodeGrid[START_NODE_ROW][START_NODE_COL] &&
       node != nodeGrid[FINISH_NODE_ROW][FINISH_NODE_COL]
     ) {
-      let element = document.getElementById(node.col + "_" + node.row);
-      element.classList.add("shortest");
+      nodeGrid[node.row][node.col].shortest = true;
     }
   }
+
+  const states = ["wall", "eraser", "setStart", "setFinish"];
+  const controls = [
+    { name: "Start", func: startSearch },
+    { name: "Clear Path", func: clearPath },
+    { name: "Clear Board", func: resetBoard },
+  ];
 </script>
 
 <div class="button-panel">
-  <button on:click={() => startSearch()}>START</button>
-  <button on:click={() => clearPath()}>Clear Path</button>
-  <button on:click={() => resetBoard()}>Clear Board</button>
+  {#each controls as { name, func }}
+    <button on:click={() => func()}>{name}</button>
+    <!-- content here -->
+  {/each}
 </div>
 <div class="button-panel">
-  {#if interactState == "wall"}
-    <button class="selected" on:click={() => (interactState = "wall")}
-      >Wall</button
+  {#each states as state}
+    <button
+      class:selected={interactState === state}
+      on:click={() => (interactState = state)}>{state}</button
     >
-  {:else}
-    <button on:click={() => (interactState = "wall")}>Wall</button>
-  {/if}
-  {#if interactState == "eraser"}
-    <button class="selected" on:click={() => (interactState = "eraser")}
-      >Eraser</button
-    >
-  {:else}
-    <button on:click={() => (interactState = "eraser")}>Eraser</button>
-  {/if}
-  {#if interactState == "setStart"}
-    <button class="selected" on:click={() => (interactState = "setStart")}
-      >SET Start
-    </button>
-  {:else}
-    <button on:click={() => (interactState = "setStart")}
-      >SET Start <div
-        style="min-width: 15px; min-height 15px; background-color: green"
-      />
-    </button>
-  {/if}
-  {#if interactState == "setFinish"}
-    <button class="selected" on:click={() => (interactState = "setFinish")}
-      >SET Finish</button
-    >
-  {:else}
-    <button on:click={() => (interactState = "setFinish")}>SET Finish</button>
-  {/if}
+  {/each}
 </div>
 <div class="slidecontainer">
   <p style="font-weight:bold">Animation Delay(ms): {animationSpeed}</p>
@@ -340,42 +286,40 @@
   />
 </div>
 <p style="font-weight:bold">Actions Counter: {actionsCounter}</p>
-{#key reset}
+<div
+  draggable="false"
+  ondragstart="return false"
+  class="grid"
+  style="display: flex; justify-content: center;"
+>
   <div
-    ondragstart="return false"
-    class="grid"
-    style="display: flex; justify-content: center;"
+    class="container"
+    style="grid-template-rows: {MAX_row} ; grid-template-columns: {MAX_col};"
   >
-    <div
-      class="container"
-      style="grid-template-rows: {MAX_row} ; grid-template-columns: {MAX_col};"
-    >
-      {#each nodeGrid as currRow, i (i)}
-        {#each currRow as currNode, j (j)}
-          <div class="gridBox">
-            <div
-              class="gridNode"
-              on:mousemove={(e) => {
-                if (mouseDown) interact(e);
-              }}
-              on:touchmove={(e) => {
-                let id = getElementID(e);
-                interact(e);
-              }}
-              on:mousedown={(e) => interact(e)}
-              id="{j}_{i}"
-              class:visited={false}
-              class:shortest={false}
-              class:finish={currNode.isFinish}
-              class:start={currNode.isStart}
-              class:wall={currNode.isWall}
-            />
-          </div>
-        {/each}
+    {#each nodeGrid as currRow, i (i)}
+      {#each currRow as currNode, j (j)}
+        <div class="gridBox">
+          <div
+            class="gridNode"
+            on:mousemove={(e) => {
+              if (mouseDown) interact(e, currNode);
+            }}
+            on:touchmove={(e) => {
+              let id = getElementID(e);
+              interact(e, currNode);
+            }}
+            on:mousedown={(e) => interact(e, currNode)}
+            class:wall={currNode.isWall}
+            class:visited={currNode.isVisited}
+            class:shortest={currNode.shortest}
+            class:finish={currNode.isFinish}
+            class:start={currNode.isStart}
+          />
+        </div>
       {/each}
-    </div>
+    {/each}
   </div>
-{/key}
+</div>
 
 <style>
   .container {
@@ -419,7 +363,7 @@
   .container div.gridNode.wall {
     animation-name: addWallAnimation;
     animation-duration: 0.2s;
-    background-color: rgb(46, 46, 46);
+    background-color: rgb(46, 46, 46) !important;
   }
 
   .container div.gridNode:hover {
@@ -438,6 +382,7 @@
   }
 
   button {
+    text-transform: capitalize;
     background-color: var(--clrBtn);
     border: none;
     color: white;
