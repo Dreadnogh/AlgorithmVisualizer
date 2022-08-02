@@ -14,14 +14,14 @@
   } from "../algorithms/Astar.js";
   let START_NODE_ROW = 5;
   let START_NODE_COL = 4;
-  let FINISH_NODE_ROW = 14;
-  let FINISH_NODE_COL = 15;
-  let grid = [40, 40];
+  let FINISH_NODE_ROW = 13;
+  let FINISH_NODE_COL = 13;
+  let gridSize = [40, 40];
   if (screen.width < 420) {
-    grid = [25, 25];
+    gridSize = [15, 15];
   }
-  $: MAX_col = `repeat(${grid[1]}, 1fr)`;
-  $: MAX_row = `repeat(${grid[0]}, 1fr)`;
+  $: MAX_col = `repeat(${gridSize[1]}, 1fr)`;
+  $: MAX_row = `repeat(${gridSize[0]}, 1fr)`;
   let nodeGrid: Node[][] = [];
   let currentNode = null;
   let interactState = "wall";
@@ -36,9 +36,9 @@
   //Setup 2D grid array
   function createGrid() {
     nodeGrid = [];
-    for (let i = 0; i < grid[0]; i++) {
+    for (let i = 0; i < gridSize[0]; i++) {
       let currentRow: Node[] = [];
-      for (let j = 0; j < grid[1]; j++) {
+      for (let j = 0; j < gridSize[1]; j++) {
         currentNode = createNode(i, j);
         currentRow.push(currentNode);
       }
@@ -99,14 +99,17 @@
       e.map((n) => {
         n.isVisited = false;
         n.shortest = false;
+        n.distance = Infinity;
         n.previousNode = null;
         return n;
       })
     );
+
     reset++;
   }
 
   function startSearch() {
+    clearPath();
     let algorithm = $algoStore;
     let visitedNodesInOrder = [];
     let nodesInShortestPathOrder = [];
@@ -123,8 +126,9 @@
         break;
       case "dijkstra":
         visitedNodesInOrder = startDijkstra(nodeGrid, startNode, finishNode);
-        nodesInShortestPathOrder =
-          getNodesInShortestPathOrderDijkstra(finishNode);
+        nodesInShortestPathOrder = getNodesInShortestPathOrderDijkstra(
+          finishNode
+        );
         animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
         break;
 
@@ -378,15 +382,13 @@
   @media only screen and (max-device-width: 480px) {
     .container {
       display: grid;
-      grid-auto-rows: 1fr;
       border: 2px solid rgb(0, 0, 0);
       border-radius: 5px;
       width: 100%;
       grid-gap: 0px;
       row-gap: 0px;
-      height: 100%;
+      height: 400px;
       background: rgb(255, 255, 255);
-      overflow: hidden;
     }
   }
 </style>

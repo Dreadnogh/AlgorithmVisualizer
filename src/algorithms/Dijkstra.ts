@@ -1,6 +1,6 @@
 export function startDijkstra(nodeGrid, START_NODE, FINISH_NODE) {
   const visitedNodesInOrder = [];
-  nodeGrid[START_NODE.row][START_NODE.col].distance = 0;
+  START_NODE.distance = 0;
   const unvisitedNodes = getAllNodes(nodeGrid);
   console.log("Started traverse grid...");
   while (!!unvisitedNodes.length) {
@@ -8,18 +8,17 @@ export function startDijkstra(nodeGrid, START_NODE, FINISH_NODE) {
     const closestNode = unvisitedNodes.shift();
     // If node is a wall, we skip it.
     if (closestNode.isWall) {
-      console.log('This node is a wall.');
       continue;
     } else {
-
-      
       // If the closest node is at a distance of infinity,we are stuck and must break
-      if (closestNode.distance === Infinity) return visitedNodesInOrder;
+      if (closestNode.distance === Infinity) {
+        return visitedNodesInOrder;
+      }
+
       closestNode.visited = true;
-      
+
       visitedNodesInOrder.push(closestNode);
-      if (closestNode === nodeGrid[FINISH_NODE.row][FINISH_NODE.col]) {
-        console.log("Found finish node");
+      if (closestNode === FINISH_NODE) {
         return visitedNodesInOrder;
       }
     }
@@ -53,6 +52,7 @@ function getAllNodes(grid) {
   const nodes = [];
   for (const row of grid) {
     for (const node of row) {
+      node.visited = false;
       nodes.push(node);
     }
   }

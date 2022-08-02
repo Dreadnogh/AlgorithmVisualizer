@@ -13,6 +13,7 @@
 
 <div class="gridBox">
   <div
+    id={currNode.row + "_" + currNode.col}
     class="gridNode"
     on:mousemove={(e) => {
       if (mouseDown) interact(e, currNode);
@@ -51,15 +52,16 @@
     background-color: green;
   }
 
+  div.gridNode:hover {
+    background-color: rgb(163, 163, 163);
+  }
+
   div.gridNode.wall {
     animation-name: addWallAnimation;
     animation-duration: 0.2s;
     background-color: rgb(46, 46, 46) !important;
   }
 
-  div.gridNode:hover {
-    background-color: rgb(163, 163, 163);
-  }
   div.visited {
     background: radial-gradient(var(--clrVisited), #88fff5);
     animation-name: transitionColor;
