@@ -1,12 +1,12 @@
 <script>
-  import { algoStore } from "./algoStore";
+  import { selectedAlgorithm } from "./stores/algSettingsStore";
   let options = ["a*", "dijkstra", "unweighted", "weighted"];
 </script>
 
 <div class="header">
   <label
     >Algorithm
-    <select id="algSelector" bind:value={$algoStore}>
+    <select id="algSelector" bind:value={$selectedAlgorithm}>
       <option value="" disabled selected>Select your option</option>
       {#each options as item}
         <option value={item}>{item}</option>

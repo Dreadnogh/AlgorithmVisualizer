@@ -1,8 +1,12 @@
 <script lang="ts">
-  import { algoStore } from "./algoStore";
   import GridNode from "./GridNode.svelte";
   import type { Node } from "./Models/Models";
-  import { is_empty } from "svelte/internal";
+  import {
+    animationSpeed,
+    interactState,
+    selectedAlgorithm,
+  } from "./stores/algSettingsStore";
+
   import {
     startDijkstra,
     getNodesInShortestPathOrderDijkstra,
@@ -12,6 +16,10 @@
     startAstar,
     getNodesInShortestPathOrderAstar,
   } from "../algorithms/Astar.js";
+
+  import ButtonPanel from "./buttonPanel.svelte";
+  import { each } from "svelte/internal";
+
   let START_NODE_ROW = 5;
   let START_NODE_COL = 4;
   let FINISH_NODE_ROW = 13;
@@ -24,12 +32,10 @@
   $: MAX_row = `repeat(${gridSize[0]}, 1fr)`;
   let nodeGrid: Node[][] = [];
   let currentNode = null;
-  let interactState = "wall";
+  let oldNode = null;
   let runningTimeouts = [];
   let mouseDown = false;
   let actionsCounter = 0;
-  let animationSpeed = 15;
-  let reset = 0;
 
   //Setup initial grid
   createGrid();
@@ -60,10 +66,19 @@
     };
   }
 
+  document.body.onmousedown = () => {
+    mouseDown = true;
+  };
+
+  document.body.onmouseup = () => {
+    mouseDown = false;
+  };
+
   function interact(event) {
     let currNode = event.detail.currNode;
-    if (!currNode) return;
-    switch (interactState) {
+    if (!currNode || currNode === oldNode) return;
+    oldNode = currNode;
+    switch ($interactState) {
       case "wall":
         setWall(currNode);
         break;
@@ -89,7 +104,6 @@
     actionsCounter = 0;
     runningTimeouts.forEach((t) => clearTimeout(t));
     createGrid();
-    reset++;
   }
 
   function clearPath() {
@@ -104,13 +118,11 @@
         return n;
       })
     );
-
-    reset++;
   }
 
   function startSearch() {
     clearPath();
-    let algorithm = $algoStore;
+    let algorithm = $selectedAlgorithm;
     let visitedNodesInOrder = [];
     let nodesInShortestPathOrder = [];
     let startNode = nodeGrid[START_NODE_ROW][START_NODE_COL];
@@ -182,23 +194,17 @@
     nodeGrid[row][col].isStart = false;
   }
 
-  document.body.onmousedown = () => {
-    mouseDown = true;
-  };
-
-  document.body.onmouseup = () => {
-    mouseDown = false;
-  };
-
   // ################ ANIMATION ################
   function animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder) {
+    let animSpeed = $animationSpeed;
+
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       //Animate shortest path nodes
       if (i === visitedNodesInOrder.length) {
         runningTimeouts.push(
           setTimeout(() => {
             animateShortestPath(nodesInShortestPathOrder);
-          }, animationSpeed * i)
+          }, animSpeed * i)
         );
         return;
       }
@@ -209,7 +215,7 @@
           actionsCounter++;
           const node = visitedNodesInOrder[i];
           if (node != undefined) addVisitedClass(node);
-        }, animationSpeed * i)
+        }, animSpeed * i)
       );
     }
   }
@@ -242,42 +248,14 @@
       nodeGrid[node.row][node.col].shortest = true;
     }
   }
-
-  const states = ["wall", "eraser", "setStart", "setFinish"];
-  const controls = [
-    { name: "Start", func: startSearch },
-    { name: "Clear Path", func: clearPath },
-    { name: "Clear Board", func: resetBoard },
-  ];
 </script>
 
-<div class="button-panel">
-  {#each controls as { name, func }}
-    <button on:click={() => func()}>{name}</button>
-    <!-- content here -->
-  {/each}
-</div>
-<div class="button-panel">
-  {#each states as state}
-    <button
-      class:selected={interactState === state}
-      on:click={() => (interactState = state)}>{state}</button
-    >
-  {/each}
-</div>
-<div class="slidecontainer">
-  <p style="font-weight:bold">Animation Delay(ms): {animationSpeed}</p>
-  <input
-    style="max-width: 35%"
-    bind:value={animationSpeed}
-    type="range"
-    min="1"
-    max="100"
-    class="slider"
-    id="myRange"
-  />
-</div>
-<p style="font-weight:bold">Actions Counter: {actionsCounter}</p>
+<ButtonPanel
+  on:startSearch={startSearch}
+  on:clearPath={clearPath}
+  on:resetBoard={resetBoard}
+  {actionsCounter}
+/>
 <div
   draggable="false"
   ondragstart="return false"
@@ -306,74 +284,6 @@
     row-gap: 0px;
     height: 800px;
     background: rgb(255, 255, 255);
-  }
-
-  .button-panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: row;
-    flex-wrap: wrap;
-    row-gap: 5px;
-    column-gap: 2px;
-    padding-bottom: 5px;
-  }
-
-  button {
-    text-transform: capitalize;
-    background-color: var(--clrBtn);
-    border: none;
-    color: white;
-    padding: 12px 16px;
-    text-align: center;
-    font-size: 17px;
-    cursor: pointer;
-    font-weight: 400;
-    min-width: 7vw;
-  }
-
-  button.selected {
-    background-color: lightslategray;
-    border-inline: 1rem solid var(--clrBtn);
-    font-weight: bold;
-  }
-
-  button:hover {
-    background-color: RoyalBlue;
-  }
-
-  p {
-    color: var(--clrText);
-  }
-
-  .slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 15px;
-    border-radius: 5px;
-    background: #cccccc;
-    outline: none;
-    opacity: 0.7;
-    -webkit-transition: 0.2s;
-    transition: opacity 0.2s;
-  }
-
-  .slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: var(--clrBtn);
-    cursor: pointer;
-  }
-
-  .slider::-moz-range-thumb {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: var(--clrBtn);
-    cursor: pointer;
   }
 
   /* ########## ANIMATION CSS ##########  */

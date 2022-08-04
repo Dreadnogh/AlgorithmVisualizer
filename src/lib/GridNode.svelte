@@ -1,9 +1,11 @@
 <script>
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
-  export let mouseDown;
+  export let mouseDown = false;
   export let currNode;
+  let oldNode = null;
   function interact(e, currNode) {
+    oldNode = currNode;
     dispatch("interact", {
       e,
       currNode,
