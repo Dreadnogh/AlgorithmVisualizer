@@ -286,8 +286,6 @@
     background: rgb(255, 255, 255);
   }
 
-  /* ########## ANIMATION CSS ##########  */
-
   /* ########## MOBILE DEVICE ########## */
   @media only screen and (max-device-width: 480px) {
     .container {

@@ -2,7 +2,6 @@ export function startDijkstra(nodeGrid, START_NODE, FINISH_NODE) {
   const visitedNodesInOrder = [];
   START_NODE.distance = 0;
   const unvisitedNodes = getAllNodes(nodeGrid);
-  console.log("Started traverse grid...");
   while (!!unvisitedNodes.length) {
     sortNodesByDistance(unvisitedNodes);
     const closestNode = unvisitedNodes.shift();
@@ -60,8 +59,6 @@ function getAllNodes(grid) {
 }
 
 export function getNodesInShortestPathOrderDijkstra(finishNode) {
-  console.log("Started to find shortest path");
-
   const nodesInShortestPathOrder = [];
   let currentNode = finishNode;
 

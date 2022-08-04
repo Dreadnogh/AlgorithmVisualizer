@@ -17,7 +17,6 @@ export function startAstar(grid, start, end) {
     visitedNodesInOrder.push(currentNode);
     // End case -- result has been found, return the traced path
     if (currentNode.col == end.col && currentNode.row == end.row) {
-      console.log("done");
       return visitedNodesInOrder;
     }
 
@@ -104,8 +103,6 @@ function getNeighbors(grid, node) {
 }
 
 export function getNodesInShortestPathOrderAstar(finishNode, nodeGrid) {
-  console.log("Started to find shortest path");
-
   const nodesInShortestPathOrder = [];
   let currentNode = finishNode;
   while (currentNode !== null) {
