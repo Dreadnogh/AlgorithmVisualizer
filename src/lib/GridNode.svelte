@@ -32,7 +32,7 @@
 <style>
   div.gridBox {
     background-color: #ffffff;
-    outline: 1px solid black;
+    outline: 1px solid var(--clrOutline);
     height: 100%;
     width: 100%;
     display: flex;

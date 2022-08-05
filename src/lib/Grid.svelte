@@ -277,7 +277,7 @@
 <style>
   .container {
     display: grid;
-    border: 3px solid rgb(0, 0, 0);
+    border: 3px solid var(--clrOutline);
     border-radius: 5px;
     width: 800px;
     grid-gap: 0px;
@@ -290,7 +290,7 @@
   @media only screen and (max-device-width: 480px) {
     .container {
       display: grid;
-      border: 2px solid rgb(0, 0, 0);
+      border: 2px solid var(--clrOutline);
       border-radius: 5px;
       width: 100%;
       grid-gap: 0px;

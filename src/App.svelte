@@ -18,6 +18,7 @@
     --clrBtn: DodgerBlue;
     --clrBackground: rgb(81, 81, 104);
     --clrText: white;
+    --clrOutline: rgba(99, 99, 99, 0.507);
   }
 
   main {
