@@ -4,12 +4,12 @@
 </script>
 
 <div class="header">
-  <label
+  <label style="color:black"
     >Algorithm
     <select id="algSelector" bind:value={$selectedAlgorithm}>
       <option value="" disabled selected>Select your option</option>
       {#each options as item}
-        <option value={item}>{item}</option>
+        <option value={item}>{item[0].toUpperCase() + item.slice(1)}</option>
       {/each}
     </select>
   </label>
@@ -18,7 +18,7 @@
 <style>
   .header {
     font-weight: bold;
-    height: 40px;
+    height: 30px;
     background: rgb(0, 188, 221);
     margin-bottom: 5px;
     display: flex;

@@ -24,7 +24,7 @@
   let START_NODE_COL = 4;
   let FINISH_NODE_ROW = 13;
   let FINISH_NODE_COL = 13;
-  let gridSize = [40, 40];
+  let gridSize = [35, 35];
   if (screen.width < 420) {
     gridSize = [15, 15];
   }
@@ -35,7 +35,7 @@
   let oldNode = null;
   let runningTimeouts = [];
   let mouseDown = false;
-  let actionsCounter = 0;
+  let operationsCounter = 0;
 
   //Setup initial grid
   createGrid();
@@ -101,13 +101,13 @@
   }
 
   function resetBoard() {
-    actionsCounter = 0;
+    operationsCounter = 0;
     runningTimeouts.forEach((t) => clearTimeout(t));
     createGrid();
   }
 
   function clearPath() {
-    actionsCounter = 0;
+    operationsCounter = 0;
     runningTimeouts.forEach((t, i) => clearTimeout(t));
     nodeGrid = nodeGrid.map((e) =>
       e.map((n) => {
@@ -212,7 +212,7 @@
       //Animate visited nodes
       runningTimeouts.push(
         setTimeout(() => {
-          actionsCounter++;
+          operationsCounter++;
           const node = visitedNodesInOrder[i];
           if (node != undefined) addVisitedClass(node);
         }, animSpeed * i)
@@ -250,11 +250,12 @@
   }
 </script>
 
+<!-- ####### HTML #######-->
 <ButtonPanel
   on:startSearch={startSearch}
   on:clearPath={clearPath}
   on:resetBoard={resetBoard}
-  {actionsCounter}
+  {operationsCounter}
 />
 <div
   draggable="false"
@@ -274,16 +275,19 @@
   </div>
 </div>
 
+<!-- ####### HTML END #######-->
 <style>
   .container {
     display: grid;
     border: 3px solid var(--clrOutline);
     border-radius: 5px;
-    width: 800px;
+    width: 100%;
     grid-gap: 0px;
     row-gap: 0px;
-    height: 800px;
-    background: rgb(255, 255, 255);
+    height: 100%;
+    background: var(--clrGridBackground);
+    aspect-ratio: 1;
+    margin: 0 31% 0 31%;
   }
 
   /* ########## MOBILE DEVICE ########## */
@@ -296,7 +300,7 @@
       grid-gap: 0px;
       row-gap: 0px;
       height: 400px;
-      background: rgb(255, 255, 255);
+      background: var(--clrGridBackground);
     }
   }
 </style>

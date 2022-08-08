@@ -13,7 +13,7 @@
     dispatch("resetBoard");
   }
 
-  export let actionsCounter = 0;
+  export let operationsCounter = 0;
   const states = ["wall", "eraser", "setStart", "setFinish"];
   const controls = [
     { name: "Start", func: startSearch },
@@ -37,7 +37,9 @@
 </div>
 
 <div class="slidecontainer">
-  <p style="font-weight:bold">Animation Delay(ms): {$animationSpeed}</p>
+  <p style="font-weight:bold;">
+    Animation Delay(ms): {$animationSpeed}
+  </p>
   <input
     style="max-width: 35%"
     bind:value={$animationSpeed}
@@ -48,9 +50,18 @@
     id="myRange"
   />
 </div>
-<p style="font-weight:bold">Actions Counter: {actionsCounter}</p>
+<p style="font-weight:bold; margin-bottom: 5px">
+  Operations Counter: {operationsCounter}
+</p>
 
 <style>
+  p {
+    margin: 0px;
+    padding: 0px;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+  }
+
   .button-panel {
     display: flex;
     align-items: center;
@@ -67,7 +78,7 @@
     background-color: var(--clrBtn);
     border: none;
     color: white;
-    padding: 12px 16px;
+    padding: 8px 8px;
     text-align: center;
     font-size: 17px;
     cursor: pointer;
@@ -92,7 +103,7 @@
   .slider {
     -webkit-appearance: none;
     width: 100%;
-    height: 15px;
+    height: 10px;
     border-radius: 5px;
     background: #cccccc;
     outline: none;
@@ -104,8 +115,8 @@
   .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--clrBtn);
     cursor: pointer;

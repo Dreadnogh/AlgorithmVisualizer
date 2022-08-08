@@ -31,7 +31,7 @@
 
 <style>
   div.gridBox {
-    background-color: #ffffff;
+    background: var(--clrGridBackground);
     outline: 1px solid var(--clrOutline);
     height: 100%;
     width: 100%;
@@ -41,7 +41,7 @@
   }
 
   div.gridNode {
-    background-color: rgb(255, 255, 255);
+    background: var(--clrGridBackground);
     width: 100%;
     height: 100%;
   }
@@ -88,8 +88,8 @@
       /*transform: scale(0.2);*/
     }
     50% {
-      height: 80%;
-      width: 80%;
+      height: 100%;
+      width: 100%;
       background: rgb(49, 197, 165);
     }
     100% {
